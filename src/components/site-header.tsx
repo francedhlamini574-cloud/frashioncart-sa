@@ -12,9 +12,9 @@ export function SiteHeader() {
           <Link to="/" className="font-display text-2xl tracking-tight">Frashion</Link>
           <nav className="hidden md:flex items-center gap-7 text-[13px]">
             <Link to="/shop" className="hover:opacity-60 transition-opacity">Shop</Link>
-            <Link to="/shop" search={{ cat: "Womenswear" } as never} className="hover:opacity-60">Women</Link>
-            <Link to="/shop" search={{ cat: "Menswear" } as never} className="hover:opacity-60">Men</Link>
-            <Link to="/shop" search={{ cat: "Accessories" } as never} className="hover:opacity-60">Accessories</Link>
+            <Link to="/shop" className="hover:opacity-60">Women</Link>
+            <Link to="/shop" className="hover:opacity-60">Men</Link>
+            <Link to="/shop" className="hover:opacity-60">Accessories</Link>
             <Link to="/sell" className="hover:opacity-60">Sell on Frashion</Link>
           </nav>
         </div>
