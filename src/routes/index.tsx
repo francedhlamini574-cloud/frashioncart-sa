@@ -35,7 +35,7 @@ function Landing() {
                 The new<br/>ateliers of<br/><em className="italic font-light">South Africa.</em>
               </h1>
               <p className="mt-8 text-base leading-relaxed text-muted-foreground max-w-sm">
-                Frashion is a marketplace for independent designers — from Cape Town ateliers to Joburg studios. Shipped by the makers themselves.
+                FrashionCart is a marketplace for independent designers — from Cape Town ateliers to Joburg studios. Shipped by the makers themselves.
               </p>
               <div className="mt-10 flex items-center gap-6">
                 <Link to="/shop" className="group inline-flex items-center gap-3 bg-foreground px-6 py-3.5 text-[11px] tracking-[0.2em] uppercase text-background">
@@ -43,7 +43,7 @@ function Landing() {
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link to="/sell" className="text-[11px] tracking-[0.2em] uppercase border-b border-foreground pb-0.5">
-                  Sell on Frashion
+                  Sell on FrashionCart
                 </Link>
               </div>
             </div>
@@ -51,7 +51,7 @@ function Landing() {
           <div className="md:col-span-7 relative overflow-hidden bg-muted min-h-[60vh]">
             <img
               src={heroImg}
-              alt="Frashion Autumn Winter campaign"
+              alt="FrashionCart Autumn Winter campaign"
               width={1600}
               height={1808}
               className="h-full w-full object-cover"
@@ -160,7 +160,7 @@ function Landing() {
               Your label, in front of the country's most considered shoppers.
             </h2>
             <p className="mt-6 text-background/70 max-w-lg">
-              Open a Frashion storefront in minutes. You keep 90% of every sale — we handle discovery, checkout and payments. You ship to the customer, on your terms.
+              Open a FrashionCart storefront in minutes. You keep 90% of every sale — we handle discovery, checkout and payments. You ship to the customer, on your terms.
             </p>
             <Link to="/sell" className="mt-10 inline-flex items-center gap-3 bg-background px-6 py-3.5 text-[11px] tracking-[0.2em] uppercase text-foreground">
               Apply to sell

@@ -3,18 +3,20 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ProductCard } from "@/components/product-card";
-import { CATEGORIES, PRODUCTS } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/mock-data";
+import { useProducts } from "@/lib/products-store";
 
 export const Route = createFileRoute("/shop")({
   component: Shop,
 });
 
 function Shop() {
+  const { all } = useProducts();
   const [cat, setCat] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"new" | "low" | "high">("new");
 
-  let items = PRODUCTS.filter(p =>
+  let items = all.filter(p =>
     (!cat || p.category === cat) &&
     (!q || (p.name + " " + p.brand).toLowerCase().includes(q.toLowerCase()))
   );

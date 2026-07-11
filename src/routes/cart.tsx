@@ -64,7 +64,7 @@ function CartPage() {
                   <div className="mt-4 border-t border-border pt-4 flex justify-between text-base"><span>Total</span><span>{formatZAR(total)}</span></div>
                 </div>
                 <button className="mt-6 w-full bg-foreground py-4 text-[11px] tracking-[0.2em] uppercase text-background">Checkout</button>
-                <p className="mt-4 text-[11px] text-muted-foreground text-center">Shipped by each brand independently. Frashion retains a 10% platform fee.</p>
+                <p className="mt-4 text-[11px] text-muted-foreground text-center">Shipped by each brand independently. FrashionCart retains a 10% platform fee.</p>
               </div>
             </aside>
           </div>

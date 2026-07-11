@@ -1,39 +1,81 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { PRODUCTS, formatZAR } from "@/lib/mock-data";
-import { LayoutGrid, Package, ShoppingBag, TrendingUp, Settings, LogOut, Plus, Search } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { formatZAR, CATEGORIES, type Product } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-store";
+import { useProducts } from "@/lib/products-store";
+import { LayoutGrid, Package, ShoppingBag, TrendingUp, Settings, LogOut, Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/seller")({
-  head: () => ({ meta: [{ title: "Seller dashboard — Frashion" }] }),
+  head: () => ({ meta: [{ title: "Seller dashboard — FrashionCart S.A" }] }),
   component: SellerDashboard,
 });
 
-const MOCK_ORDERS = [
-  { id: "FR-24098", customer: "L. van Rensburg", city: "Cape Town", items: 2, total: 5730, status: "New", date: "Today" },
-  { id: "FR-24097", customer: "N. Mbatha",       city: "Johannesburg", items: 1, total: 2890, status: "Packed", date: "Today" },
-  { id: "FR-24096", customer: "T. Molefe",       city: "Pretoria", items: 3, total: 8940, status: "Shipped", date: "Yesterday" },
-  { id: "FR-24094", customer: "S. Adams",        city: "Durban", items: 1, total: 4200, status: "Delivered", date: "2 days ago" },
-];
-
 type Tab = "overview" | "products" | "orders" | "earnings" | "settings";
 
+const MOCK_ORDERS = [
+  { id: "FR-24098", customer: "L. van Rensburg", city: "Cape Town", items: 2, total: 5730, status: "New", date: "Today" },
+  { id: "FR-24097", customer: "N. Mbatha", city: "Johannesburg", items: 1, total: 2890, status: "Packed", date: "Today" },
+  { id: "FR-24096", customer: "T. Molefe", city: "Pretoria", items: 3, total: 8940, status: "Shipped", date: "Yesterday" },
+];
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function SellerDashboard() {
+  const { user, logout, updateProfile } = useAuth();
+  const { byBrandOwner, addProduct, updateProduct, removeProduct } = useProducts();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
-  const products = PRODUCTS.filter(p => p.brandSlug === "maison-noir" || p.brandSlug === "isilo-atelier");
-  const grossSales = 148_320;
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!localStorage.getItem("frashioncart.session")) navigate({ to: "/login" });
+    }, 50);
+    return () => clearTimeout(t);
+  }, [navigate]);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="font-display text-3xl mb-4">Brand sign-in required</h1>
+          <Link to="/login" className="bg-foreground px-6 py-3 text-[11px] uppercase tracking-widest text-background inline-block">Sign in</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (user.role !== "brand") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        <div className="max-w-md text-center">
+          <div className="eyebrow mb-3">Seller area</div>
+          <h1 className="font-display text-3xl mb-4">This section is for brand accounts.</h1>
+          <p className="text-sm text-muted-foreground mb-6">Sign up as a brand to list and price your products on FrashionCart S.A.</p>
+          <div className="flex justify-center gap-3">
+            <Link to="/signup" className="bg-foreground px-6 py-3 text-[11px] uppercase tracking-widest text-background">Create brand account</Link>
+            <Link to="/account" className="border border-border px-6 py-3 text-[11px] uppercase tracking-widest">My account</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const products = byBrandOwner(user.id);
+  const grossSales = products.reduce((s, p) => s + p.price * Math.max(0, 24 - p.stock), 0);
   const commission = grossSales * 0.1;
   const net = grossSales - commission;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="grid md:grid-cols-[240px_1fr]">
-        {/* Sidebar */}
         <aside className="border-r border-border p-6 md:min-h-screen">
-          <Link to="/" className="font-display text-2xl block mb-10">Frashion</Link>
+          <Link to="/" className="font-display text-xl block mb-8">FrashionCart <span className="text-muted-foreground">S.A</span></Link>
           <div className="mb-6">
-            <div className="eyebrow mb-2">Seller</div>
-            <div className="font-medium">Maison Noir</div>
-            <div className="text-xs text-muted-foreground">Cape Town · Verified</div>
+            <div className="eyebrow mb-2">Brand</div>
+            <div className="font-medium">{user.brandName}</div>
+            <div className="text-xs text-muted-foreground">{user.brandLocation || "South Africa"}</div>
           </div>
           <nav className="space-y-1 text-sm">
             {([
@@ -43,59 +85,41 @@ function SellerDashboard() {
               ["earnings", TrendingUp, "Earnings"],
               ["settings", Settings, "Settings"],
             ] as const).map(([key, Icon, label]) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${tab === key ? "bg-foreground text-background" : "hover:bg-secondary"}`}
-              >
+              <button key={key} onClick={() => setTab(key)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-left ${tab === key ? "bg-foreground text-background" : "hover:bg-secondary"}`}>
                 <Icon className="h-4 w-4" /> {label}
               </button>
             ))}
           </nav>
-          <Link to="/" className="mt-10 flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <button onClick={() => { logout(); navigate({ to: "/" }); }}
+            className="mt-10 flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
             <LogOut className="h-4 w-4" /> Sign out
-          </Link>
+          </button>
         </aside>
 
-        {/* Main */}
         <main className="p-8 md:p-12">
           {tab === "overview" && (
             <>
               <div className="eyebrow mb-3">Dashboard</div>
-              <h1 className="font-display text-5xl mb-10">Welcome back, Maison Noir.</h1>
+              <h1 className="font-display text-5xl mb-10">Welcome back, {user.brandName}.</h1>
               <div className="grid gap-4 md:grid-cols-4 mb-12">
-                {[
-                  ["Gross sales", formatZAR(grossSales), "+12% vs last month"],
-                  ["Net earnings", formatZAR(net), "After 10% platform fee"],
-                  ["Orders", "42", "8 pending fulfilment"],
-                  ["Products", `${products.length}`, "2 low on stock"],
-                ].map(([l, v, s]) => (
-                  <div key={l} className="border border-border p-6">
-                    <div className="eyebrow mb-3">{l}</div>
-                    <div className="font-display text-3xl">{v}</div>
-                    <div className="mt-2 text-xs text-muted-foreground">{s}</div>
-                  </div>
-                ))}
+                <StatCard l="Products listed" v={String(products.length)} s="Active on marketplace" />
+                <StatCard l="Est. gross sales" v={formatZAR(grossSales)} s="Simulated demo data" />
+                <StatCard l="Net earnings" v={formatZAR(net)} s="After 10% platform fee" />
+                <StatCard l="Orders (demo)" v="42" s="8 pending fulfilment" />
               </div>
 
-              <div className="grid gap-10 md:grid-cols-3">
-                <div className="md:col-span-2 border border-border">
-                  <div className="flex items-center justify-between border-b border-border px-6 py-4">
-                    <div className="eyebrow">Recent orders</div>
-                    <button onClick={() => setTab("orders")} className="text-[11px] uppercase tracking-widest underline underline-offset-4">View all</button>
-                  </div>
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {MOCK_ORDERS.map(o => (
-                        <tr key={o.id} className="border-b border-border last:border-0">
-                          <td className="px-6 py-4">{o.id}</td>
-                          <td className="px-6 py-4">{o.customer}</td>
-                          <td className="px-6 py-4">{formatZAR(o.total)}</td>
-                          <td className="px-6 py-4"><StatusPill s={o.status} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="md:col-span-2 border border-border p-6">
+                  <div className="eyebrow mb-4">Get started</div>
+                  <ol className="space-y-3 text-sm">
+                    <li className="flex items-start gap-3"><span className="font-display text-lg">01</span> Add your first product with a photo, price and stock quantity.</li>
+                    <li className="flex items-start gap-3"><span className="font-display text-lg">02</span> Customise your brand settings — tagline, location, payout details.</li>
+                    <li className="flex items-start gap-3"><span className="font-display text-lg">03</span> Share your storefront and start receiving orders across South Africa.</li>
+                  </ol>
+                  <button onClick={() => setTab("products")} className="mt-6 inline-flex items-center gap-2 bg-foreground px-5 py-3 text-[11px] uppercase tracking-widest text-background">
+                    <Plus className="h-3.5 w-3.5" /> Add a product
+                  </button>
                 </div>
                 <div className="border border-border p-6">
                   <div className="eyebrow mb-4">Next payout</div>
@@ -112,39 +136,19 @@ function SellerDashboard() {
           )}
 
           {tab === "products" && (
-            <>
-              <div className="flex items-end justify-between mb-8">
-                <div>
-                  <div className="eyebrow mb-3">Catalogue</div>
-                  <h1 className="font-display text-4xl">Products</h1>
-                </div>
-                <button className="inline-flex items-center gap-2 bg-foreground px-5 py-3 text-[11px] uppercase tracking-widest text-background">
-                  <Plus className="h-3.5 w-3.5" /> New product
-                </button>
-              </div>
-              <div className="mb-4 flex items-center gap-3 border-b border-border pb-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <input placeholder="Search products" className="w-full bg-transparent text-sm outline-none" />
-              </div>
-              <div className="border border-border">
-                <div className="grid grid-cols-[80px_1fr_120px_100px_120px_80px] items-center gap-4 border-b border-border px-4 py-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  <div></div><div>Product</div><div>Price</div><div>Stock</div><div>Status</div><div></div>
-                </div>
-                {products.map(p => (
-                  <div key={p.id} className="grid grid-cols-[80px_1fr_120px_100px_120px_80px] items-center gap-4 border-b border-border px-4 py-3 last:border-0">
-                    <img src={p.image} alt={p.name} className="h-16 w-14 object-cover" />
-                    <div>
-                      <div className="text-sm">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">{p.category}</div>
-                    </div>
-                    <div className="text-sm">{formatZAR(p.price)}</div>
-                    <div className={`text-sm ${p.stock < 8 ? "text-destructive" : ""}`}>{p.stock}</div>
-                    <div><StatusPill s={p.stock > 0 ? "Live" : "Sold out"} /></div>
-                    <button className="text-xs uppercase tracking-widest underline underline-offset-4">Edit</button>
-                  </div>
-                ))}
-              </div>
-            </>
+            <ProductsTab
+              brandName={user.brandName!}
+              ownerId={user.id}
+              products={products}
+              onAdd={(p) => addProduct({
+                ...p,
+                brand: user.brandName!,
+                brandSlug: slugify(user.brandName!),
+                ownerId: user.id,
+              })}
+              onUpdate={updateProduct}
+              onRemove={removeProduct}
+            />
           )}
 
           {tab === "orders" && (
@@ -152,19 +156,16 @@ function SellerDashboard() {
               <div className="eyebrow mb-3">Fulfilment</div>
               <h1 className="font-display text-4xl mb-10">Orders</h1>
               <div className="border border-border">
-                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_140px] gap-4 border-b border-border px-6 py-3 text-[11px] uppercase tracking-widest text-muted-foreground">
-                  <div>Order</div><div>Customer</div><div>City</div><div>Total</div><div>Status</div><div>Action</div>
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_120px] gap-4 border-b border-border px-6 py-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <div>Order</div><div>Customer</div><div>City</div><div>Total</div><div>Status</div>
                 </div>
                 {MOCK_ORDERS.map(o => (
-                  <div key={o.id} className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_140px] gap-4 border-b border-border px-6 py-4 last:border-0 text-sm">
+                  <div key={o.id} className="grid grid-cols-[1fr_1fr_1fr_1fr_120px] gap-4 border-b border-border px-6 py-4 last:border-0 text-sm">
                     <div>{o.id}<div className="text-xs text-muted-foreground">{o.date}</div></div>
                     <div>{o.customer}</div>
                     <div>{o.city}</div>
                     <div>{formatZAR(o.total)}</div>
-                    <div><StatusPill s={o.status} /></div>
-                    <button className="text-xs uppercase tracking-widest underline underline-offset-4 text-left">
-                      {o.status === "New" ? "Mark packed" : o.status === "Packed" ? "Mark shipped" : "Details"}
-                    </button>
+                    <div className="text-xs uppercase tracking-widest">{o.status}</div>
                   </div>
                 ))}
               </div>
@@ -176,38 +177,25 @@ function SellerDashboard() {
               <div className="eyebrow mb-3">Payouts</div>
               <h1 className="font-display text-4xl mb-10">Earnings</h1>
               <div className="grid gap-4 md:grid-cols-3 mb-12">
-                <StatBox l="Lifetime gross" v={formatZAR(524_890)} />
-                <StatBox l="Platform fees" v={`−${formatZAR(52_489)}`} />
-                <StatBox l="Paid out to you" v={formatZAR(472_401)} highlight />
+                <StatCard l="Lifetime gross" v={formatZAR(grossSales)} s="From your listings" />
+                <StatCard l="Platform fees" v={`−${formatZAR(commission)}`} s="10% commission" />
+                <StatCard l="Paid out to you" v={formatZAR(net)} s="Weekly cadence" highlight />
               </div>
-              <div className="border border-border">
-                <div className="border-b border-border px-6 py-4 eyebrow">Recent payouts</div>
-                {[
-                  ["Jul 5, 2026", formatZAR(23_400), "Paid"],
-                  ["Jun 28, 2026", formatZAR(18_920), "Paid"],
-                  ["Jun 21, 2026", formatZAR(31_140), "Paid"],
-                  ["Jun 14, 2026", formatZAR(15_670), "Paid"],
-                ].map(([d, a, s]) => (
-                  <div key={d} className="flex items-center justify-between border-b border-border px-6 py-3 last:border-0 text-sm">
-                    <div>{d}</div><div>{a}</div><StatusPill s={s} />
-                  </div>
-                ))}
+              <div className="border border-border p-6 text-sm text-muted-foreground">
+                Payouts are processed every Friday to your linked South African bank account.
               </div>
             </>
           )}
 
           {tab === "settings" && (
-            <>
-              <div className="eyebrow mb-3">Storefront</div>
-              <h1 className="font-display text-4xl mb-10">Settings</h1>
-              <div className="max-w-xl space-y-6">
-                <Field label="Brand name" value="Maison Noir" />
-                <Field label="Tagline" value="Tailored essentials, made in Cape Town." />
-                <Field label="Location" value="Cape Town, ZA" />
-                <Field label="Payout email" value="payouts@maisonnoir.co.za" />
-                <button className="bg-foreground px-6 py-3 text-[11px] uppercase tracking-widest text-background">Save changes</button>
-              </div>
-            </>
+            <SettingsTab
+              initial={{
+                brandName: user.brandName ?? "",
+                brandTagline: user.brandTagline ?? "",
+                brandLocation: user.brandLocation ?? "",
+              }}
+              onSave={(v) => updateProfile(v)}
+            />
           )}
         </main>
       </div>
@@ -215,33 +203,174 @@ function SellerDashboard() {
   );
 }
 
-function StatusPill({ s }: { s: string }) {
-  const map: Record<string, string> = {
-    New: "bg-accent/40 text-foreground",
-    Packed: "bg-secondary text-foreground",
-    Shipped: "bg-foreground text-background",
-    Delivered: "border border-border text-muted-foreground",
-    Paid: "border border-border text-muted-foreground",
-    Live: "bg-foreground text-background",
-    "Sold out": "border border-destructive text-destructive",
-  };
-  return <span className={`inline-block px-2.5 py-1 text-[10px] uppercase tracking-widest ${map[s] ?? "border border-border"}`}>{s}</span>;
-}
-
-function StatBox({ l, v, highlight }: { l: string; v: string; highlight?: boolean }) {
+function StatCard({ l, v, s, highlight }: { l: string; v: string; s: string; highlight?: boolean }) {
   return (
-    <div className={`border p-6 ${highlight ? "border-foreground bg-foreground text-background" : "border-border"}`}>
+    <div className={`p-6 border ${highlight ? "bg-foreground text-background border-foreground" : "border-border"}`}>
       <div className={`eyebrow mb-3 ${highlight ? "text-background/60" : ""}`}>{l}</div>
       <div className="font-display text-3xl">{v}</div>
+      <div className={`mt-2 text-xs ${highlight ? "text-background/60" : "text-muted-foreground"}`}>{s}</div>
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+type NewProductInput = {
+  name: string; price: number; category: string; stock: number; description: string; image?: string;
+};
+
+function ProductsTab({
+  brandName, products, onAdd, onUpdate, onRemove,
+}: {
+  brandName: string;
+  ownerId: string;
+  products: Product[];
+  onAdd: (p: NewProductInput) => void;
+  onUpdate: (id: string, patch: Partial<Product>) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [showForm, setShowForm] = useState(products.length === 0);
+  const [form, setForm] = useState({
+    name: "", price: "", category: CATEGORIES[0] as string, stock: "10", description: "", image: "",
+  });
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm(f => ({ ...f, image: reader.result as string }));
+    reader.readAsDataURL(file);
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const price = parseFloat(form.price);
+    const stock = parseInt(form.stock, 10);
+    if (!form.name || !price || price <= 0) return;
+    onAdd({ name: form.name, price, category: form.category, stock: isNaN(stock) ? 0 : stock, description: form.description, image: form.image });
+    setForm({ name: "", price: "", category: CATEGORIES[0], stock: "10", description: "", image: "" });
+    setShowForm(false);
+  };
+
+  return (
+    <>
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <div className="eyebrow mb-3">Catalogue · {brandName}</div>
+          <h1 className="font-display text-4xl">Products</h1>
+        </div>
+        <button onClick={() => setShowForm(v => !v)}
+          className="inline-flex items-center gap-2 bg-foreground px-5 py-3 text-[11px] uppercase tracking-widest text-background">
+          <Plus className="h-3.5 w-3.5" /> {showForm ? "Cancel" : "New product"}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={submit} className="mb-10 border border-border p-6 grid gap-5 md:grid-cols-[220px_1fr]">
+          <div>
+            <div className="eyebrow mb-2">Product image</div>
+            <label className="block aspect-[3/4] border border-dashed border-border overflow-hidden cursor-pointer bg-muted">
+              {form.image ? (
+                <img src={form.image} alt="Preview" className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground text-center px-4">
+                  Click to upload<br />JPG or PNG
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+            </label>
+          </div>
+          <div className="space-y-4">
+            <Field label="Product name" value={form.name} onChange={set("name")} required placeholder="Ivory Cashmere Knit" />
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Price (ZAR)" value={form.price} onChange={set("price")} required type="number" min="0" placeholder="2890" />
+              <Field label="Stock" value={form.stock} onChange={set("stock")} type="number" min="0" />
+            </div>
+            <label className="block">
+              <div className="eyebrow mb-2">Category</div>
+              <select value={form.category} onChange={set("category")}
+                className="w-full border-b border-border bg-transparent py-2 text-sm outline-none focus:border-foreground">
+                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <div className="eyebrow mb-2">Description</div>
+              <textarea value={form.description} onChange={set("description")} rows={3}
+                className="w-full border border-border bg-transparent p-3 text-sm outline-none focus:border-foreground" />
+            </label>
+            <button type="submit" className="bg-foreground px-6 py-3 text-[11px] uppercase tracking-widest text-background">
+              Publish product
+            </button>
+          </div>
+        </form>
+      )}
+
+      {products.length === 0 ? (
+        <div className="border border-dashed border-border py-20 text-center">
+          <Package className="h-6 w-6 mx-auto text-muted-foreground mb-3" />
+          <p className="text-sm text-muted-foreground">No products yet. Add your first piece to start selling.</p>
+        </div>
+      ) : (
+        <div className="border border-border">
+          <div className="grid grid-cols-[80px_1fr_140px_100px_120px_80px] items-center gap-4 border-b border-border px-4 py-3 text-[11px] uppercase tracking-widest text-muted-foreground">
+            <div></div><div>Product</div><div>Price</div><div>Stock</div><div>Category</div><div></div>
+          </div>
+          {products.map(p => (
+            <div key={p.id} className="grid grid-cols-[80px_1fr_140px_100px_120px_80px] items-center gap-4 border-b border-border px-4 py-3 last:border-0">
+              <img src={p.image} alt={p.name} className="h-16 w-14 object-cover" />
+              <div>
+                <div className="text-sm">{p.name}</div>
+                <div className="text-xs text-muted-foreground line-clamp-1">{p.description}</div>
+              </div>
+              <input defaultValue={String(p.price)} type="number"
+                onBlur={e => onUpdate(p.id, { price: parseFloat(e.target.value) || p.price })}
+                className="border-b border-border bg-transparent py-1 text-sm outline-none focus:border-foreground" />
+              <input defaultValue={String(p.stock)} type="number"
+                onBlur={e => onUpdate(p.id, { stock: parseInt(e.target.value, 10) || 0 })}
+                className="border-b border-border bg-transparent py-1 text-sm outline-none focus:border-foreground w-16" />
+              <div className="text-xs text-muted-foreground">{p.category}</div>
+              <button onClick={() => onRemove(p.id)} aria-label="Delete" className="text-muted-foreground hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function SettingsTab({
+  initial, onSave,
+}: {
+  initial: { brandName: string; brandTagline: string; brandLocation: string };
+  onSave: (v: { brandName: string; brandTagline: string; brandLocation: string }) => void;
+}) {
+  const [v, setV] = useState(initial);
+  const [saved, setSaved] = useState(false);
+  return (
+    <>
+      <div className="eyebrow mb-3">Storefront</div>
+      <h1 className="font-display text-4xl mb-10">Settings</h1>
+      <form onSubmit={(e) => { e.preventDefault(); onSave(v); setSaved(true); setTimeout(() => setSaved(false), 1600); }}
+        className="max-w-xl space-y-6">
+        <Field label="Brand name" value={v.brandName} onChange={e => setV({ ...v, brandName: e.target.value })} />
+        <Field label="Tagline" value={v.brandTagline} onChange={e => setV({ ...v, brandTagline: e.target.value })} />
+        <Field label="Location" value={v.brandLocation} onChange={e => setV({ ...v, brandLocation: e.target.value })} />
+        <button className="bg-foreground px-6 py-3 text-[11px] uppercase tracking-widest text-background">
+          {saved ? "Saved" : "Save changes"}
+        </button>
+      </form>
+    </>
+  );
+}
+
+function Field({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
       <div className="eyebrow mb-2">{label}</div>
-      <input defaultValue={value} className="w-full border-b border-border bg-transparent py-2 text-sm outline-none focus:border-foreground" />
+      <input {...props} className="w-full border-b border-border bg-transparent py-2 text-sm outline-none focus:border-foreground" />
     </label>
   );
 }
