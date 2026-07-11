@@ -1,35 +1,39 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ProductCard } from "@/components/product-card";
-import { PRODUCTS, formatZAR } from "@/lib/mock-data";
+import { formatZAR } from "@/lib/mock-data";
+import { useProducts } from "@/lib/products-store";
 import { useCart } from "@/lib/cart-store";
 import { Heart, Truck, RotateCcw, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/product/$id")({
-  loader: ({ params }) => {
-    const product = PRODUCTS.find(p => p.id === params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
   component: ProductDetail,
-  notFoundComponent: () => (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="font-display text-4xl">Piece not found</h1>
-        <Link to="/shop" className="mt-6 inline-block border-b border-foreground pb-0.5 text-xs uppercase tracking-widest">Back to shop</Link>
-      </div>
-    </div>
-  ),
 });
 
 function ProductDetail() {
-  const { product } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const { all } = useProducts();
+  const product = all.find(p => p.id === id);
   const { add } = useCart();
   const [size, setSize] = useState("M");
   const [added, setAdded] = useState(false);
-  const related = PRODUCTS.filter(p => p.id !== product.id).slice(0, 4);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="mx-auto max-w-[1400px] px-6 py-24 text-center">
+          <h1 className="font-display text-4xl">Piece not found</h1>
+          <Link to="/shop" className="mt-6 inline-block border-b border-foreground pb-0.5 text-xs uppercase tracking-widest">Back to shop</Link>
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  const related = all.filter(p => p.id !== product.id).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background">
