@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart-store";
+import { AuthProvider } from "@/lib/auth-store";
+import { ProductsProvider } from "@/lib/products-store";
 
 function NotFoundComponent() {
   return (
@@ -46,10 +48,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Frashion — Independent fashion brands, curated in South Africa" },
+      { title: "FrashionCart S.A — Independent fashion brands, curated in South Africa" },
       { name: "description", content: "A multi-vendor marketplace for independent South African fashion brands. Shop womenswear, menswear, accessories and more." },
-      { name: "author", content: "Frashion" },
-      { property: "og:title", content: "Frashion — Independent fashion brands, curated" },
+      { name: "author", content: "FrashionCart S.A" },
+      { property: "og:title", content: "FrashionCart S.A — Independent fashion brands, curated" },
       { property: "og:description", content: "A multi-vendor marketplace for independent South African fashion brands." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -81,9 +83,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <Outlet />
-      </CartProvider>
+      <AuthProvider>
+        <ProductsProvider>
+          <CartProvider>
+            <Outlet />
+          </CartProvider>
+        </ProductsProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
