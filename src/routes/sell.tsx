@@ -7,9 +7,9 @@ import brand1 from "@/assets/brand1.jpg";
 export const Route = createFileRoute("/sell")({
   head: () => ({
     meta: [
-      { title: "Sell on Frashion — Open your storefront" },
-      { name: "description", content: "Open a Frashion storefront and reach South Africa's most considered fashion shoppers. Keep 90% of every sale." },
-      { property: "og:title", content: "Sell on Frashion" },
+      { title: "Sell on FrashionCart — Open your storefront" },
+      { name: "description", content: "Open a FrashionCart storefront and reach South Africa's most considered fashion shoppers. Keep 90% of every sale." },
+      { property: "og:title", content: "Sell on FrashionCart" },
       { property: "og:description", content: "Open a storefront and keep 90% of every sale." },
     ],
   }),
@@ -24,7 +24,7 @@ function Sell() {
         <div>
           <div className="eyebrow mb-4">For designers</div>
           <h1 className="font-display text-5xl md:text-7xl leading-[1.02]">
-            Sell your label on <em className="italic font-light">Frashion.</em>
+            Sell your label on <em className="italic font-light">FrashionCart.</em>
           </h1>
           <p className="mt-8 text-base leading-relaxed text-muted-foreground max-w-md">
             A curated marketplace built for South Africa's independent fashion community. List your pieces, manage inventory, and ship on your terms — we handle discovery, checkout and payments.
@@ -32,7 +32,7 @@ function Sell() {
 
           <div className="mt-10 space-y-3">
             {[
-              "Keep 90% of every sale — Frashion takes a flat 10%",
+              "Keep 90% of every sale — FrashionCart takes a flat 10%",
               "You control inventory, pricing and fulfilment",
               "Payouts weekly, in ZAR, directly to your account",
               "Dedicated onboarding + brand page",

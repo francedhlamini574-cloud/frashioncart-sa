@@ -4,7 +4,7 @@ import { BRANDS, PRODUCTS, formatZAR } from "@/lib/mock-data";
 import { LayoutGrid, Users, Package, TrendingUp, Settings, LogOut, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Frashion" }] }),
+  head: () => ({ meta: [{ title: "Admin — FrashionCart" }] }),
   component: AdminDashboard,
 });
 
@@ -31,7 +31,7 @@ function AdminDashboard() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="grid md:grid-cols-[240px_1fr]">
         <aside className="border-r border-border p-6 md:min-h-screen">
-          <Link to="/" className="font-display text-2xl block mb-2">Frashion</Link>
+          <Link to="/" className="font-display text-2xl block mb-2">FrashionCart</Link>
           <div className="eyebrow mb-8">Admin</div>
           <nav className="space-y-1 text-sm">
             {([
@@ -59,7 +59,7 @@ function AdminDashboard() {
           {tab === "overview" && (
             <>
               <div className="eyebrow mb-3">Platform</div>
-              <h1 className="font-display text-5xl mb-10">Frashion, at a glance.</h1>
+              <h1 className="font-display text-5xl mb-10">FrashionCart, at a glance.</h1>
               <div className="grid gap-4 md:grid-cols-4 mb-12">
                 <MetricCard l="Gross merchandise" v={formatZAR(gmv)} sub="+18% MoM" />
                 <MetricCard l="Platform revenue" v={formatZAR(commission)} sub="10% of GMV" highlight />

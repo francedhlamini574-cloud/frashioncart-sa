@@ -6,7 +6,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1400px] px-6 py-16 md:px-10">
         <div className="grid gap-12 md:grid-cols-4">
           <div>
-            <div className="font-display text-2xl">Frashion</div>
+            <div className="font-display text-2xl">FrashionCart</div>
             <p className="mt-3 text-sm text-muted-foreground max-w-xs">
               A curated marketplace for independent South African fashion brands.
             </p>
@@ -38,7 +38,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-16 flex flex-col-reverse gap-4 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:justify-between">
-          <div>© {new Date().getFullYear()} Frashion. Shipping across South Africa.</div>
+          <div>© {new Date().getFullYear()} FrashionCart. Shipping across South Africa.</div>
           <div className="flex gap-6">
             <a>Privacy</a><a>Terms</a><a>Contact</a>
           </div>

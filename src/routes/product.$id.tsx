@@ -90,7 +90,7 @@ function ProductDetail() {
             <div className="mt-10 space-y-3 border-t border-border pt-6 text-sm">
               <div className="flex items-center gap-3"><Truck className="h-4 w-4" /> Shipped by the brand, from South Africa</div>
               <div className="flex items-center gap-3"><RotateCcw className="h-4 w-4" /> 14-day returns via seller</div>
-              <div className="flex items-center gap-3"><Shield className="h-4 w-4" /> Frashion buyer protection</div>
+              <div className="flex items-center gap-3"><Shield className="h-4 w-4" /> FrashionCart buyer protection</div>
             </div>
           </div>
         </div>
