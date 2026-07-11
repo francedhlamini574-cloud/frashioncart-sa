@@ -20,7 +20,10 @@ function LoginPage() {
     e.preventDefault();
     const res = login(email, password);
     if (!res.ok) return setError(res.error);
-    navigate({ to: "/account" });
+    const raw = localStorage.getItem("frashioncart.users");
+    const users = raw ? JSON.parse(raw) : [];
+    const found = users.find((u: { email: string }) => u.email === email.trim().toLowerCase());
+    navigate({ to: found?.role === "brand" ? "/seller" : "/account" });
   };
 
   return (
