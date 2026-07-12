@@ -203,7 +203,7 @@ type NewProductInput = {
   colors: ProductColor[];
   discountPct?: number;
   description: string;
-  image?: string;
+  image: string;
 };
 
 function ProductsTab({
