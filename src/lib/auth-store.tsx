@@ -17,7 +17,7 @@ export type Address = {
 export type User = {
   id: string;
   email: string;
-  password: string; // demo only — never do this in production
+  password: string; // demo only — see NOTE
   role: Role;
   firstName: string;
   lastName: string;
@@ -28,8 +28,21 @@ export type User = {
   createdAt: string;
 };
 
+/**
+ * DEMO-ONLY AUTH STORE
+ * --------------------
+ * This is a frontend-only investor prototype. Passwords are stored in
+ * localStorage in plaintext and no real signing / hashing is performed.
+ * When wiring a real backend (Lovable Cloud / Supabase), replace this
+ * store with real Supabase auth. The public API of the hook is designed
+ * so that swap is a drop-in.
+ */
+
+type Session = { id: string; issuedAt: number; expiresAt: number };
+
 type AuthContextType = {
   user: User | null;
+  ready: boolean;
   users: User[];
   signup: (data: Omit<User, "id" | "addresses" | "createdAt">) => { ok: true } | { ok: false; error: string };
   login: (email: string, password: string) => { ok: true } | { ok: false; error: string };
@@ -43,22 +56,51 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const USERS_KEY = "frashioncart.users";
 const SESSION_KEY = "frashioncart.session";
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function readSession(): Session | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    // Backwards compat: previously we stored just the user id.
+    if (!raw.startsWith("{")) {
+      const legacy: Session = { id: raw, issuedAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(legacy));
+      return legacy;
+    }
+    const s = JSON.parse(raw) as Session;
+    if (!s.expiresAt || s.expiresAt < Date.now()) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return s;
+  } catch {
+    return null;
+  }
+}
+
+function writeSession(userId: string) {
+  const s: Session = { id: userId, issuedAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS };
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch {}
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(USERS_KEY);
       const parsed: User[] = raw ? JSON.parse(raw) : [];
       setUsers(parsed);
-      const sid = localStorage.getItem(SESSION_KEY);
-      if (sid) {
-        const found = parsed.find(u => u.id === sid);
+      const session = readSession();
+      if (session) {
+        const found = parsed.find(u => u.id === session.id);
         if (found) setUser(found);
       }
     } catch {}
+    setReady(true);
   }, []);
 
   const persist = (next: User[]) => {
@@ -73,14 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newUser: User = {
       ...data,
       email,
-      id: `u_${Date.now().toString(36)}`,
+      id: `u_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
       addresses: [],
       createdAt: new Date().toISOString(),
     };
     const next = [...users, newUser];
     persist(next);
     setUser(newUser);
-    try { localStorage.setItem(SESSION_KEY, newUser.id); } catch {}
+    writeSession(newUser.id);
     return { ok: true };
   };
 
@@ -88,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const found = users.find(u => u.email === email.trim().toLowerCase() && u.password === password);
     if (!found) return { ok: false, error: "Invalid email or password." };
     setUser(found);
-    try { localStorage.setItem(SESSION_KEY, found.id); } catch {}
+    writeSession(found.id);
     return { ok: true };
   };
 
@@ -107,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const addAddress: AuthContextType["addAddress"] = (a) => {
     if (!user) return;
-    const address: Address = { ...a, id: `a_${Date.now().toString(36)}` };
+    const address: Address = { ...a, id: `a_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}` };
     updateUser({ addresses: [...user.addresses, address] });
   };
 
@@ -119,7 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile: AuthContextType["updateProfile"] = (patch) => updateUser(patch);
 
   return (
-    <AuthContext.Provider value={{ user, users, signup, login, logout, addAddress, removeAddress, updateProfile }}>
+    <AuthContext.Provider value={{ user, ready, users, signup, login, logout, addAddress, removeAddress, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
