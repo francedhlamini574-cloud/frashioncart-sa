@@ -90,6 +90,11 @@
   --sidebar-accent-foreground: oklch(0.16 0.01 60);
   --sidebar-border: oklch(0.88 0.012 75);
   --sidebar-ring: oklch(0.4 0.02 60);
+
+  /* South African flag — subtle, editorial */
+  --sa-green: oklch(0.42 0.08 155);
+  --sa-gold:  oklch(0.68 0.12 78);
+  --sa-red:   oklch(0.45 0.14 25);
 }
 
 .dark {
