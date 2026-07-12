@@ -278,7 +278,7 @@ function ProductsTab({
       colors: parsed.data.colors,
       discountPct: parsed.data.discountPct,
       description: parsed.data.description ?? "",
-      image: parsed.data.image,
+      image: parsed.data.image ?? "",
     });
     setForm({
       name: "", price: "", category: initialCategory, gender: "Women", stock: "10",
