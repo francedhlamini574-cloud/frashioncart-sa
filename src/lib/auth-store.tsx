@@ -137,7 +137,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { ok: true };
   };
 
+  const signInWithIdentity: AuthContextType["signInWithIdentity"] = ({ email, firstName, lastName }) => {
+    const normalized = email.trim().toLowerCase();
+    const existing = users.find(u => u.email === normalized);
+    if (existing) {
+      setUser(existing);
+      writeSession(existing.id);
+      return existing;
+    }
+    const created: User = {
+      id: `u_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+      email: normalized,
+      password: "", // social identity — no local password
+      role: "customer",
+      firstName: firstName || normalized.split("@")[0],
+      lastName: lastName || "",
+      addresses: [],
+      createdAt: new Date().toISOString(),
+    };
+    persist([...users, created]);
+    setUser(created);
+    writeSession(created.id);
+    return created;
+  };
+
   const logout = () => {
+
     setUser(null);
     try { localStorage.removeItem(SESSION_KEY); } catch {}
   };
