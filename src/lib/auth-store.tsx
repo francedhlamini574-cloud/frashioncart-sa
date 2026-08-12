@@ -46,7 +46,10 @@ type AuthContextType = {
   users: User[];
   signup: (data: Omit<User, "id" | "addresses" | "createdAt">) => { ok: true } | { ok: false; error: string };
   login: (email: string, password: string) => { ok: true } | { ok: false; error: string };
+  /** Sign in / auto-provision a user coming back from a social provider (Google). */
+  signInWithIdentity: (identity: { email: string; firstName?: string; lastName?: string }) => User;
   logout: () => void;
+
   addAddress: (a: Omit<Address, "id">) => void;
   removeAddress: (id: string) => void;
   updateProfile: (patch: Partial<User>) => void;
