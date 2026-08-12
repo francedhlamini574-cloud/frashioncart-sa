@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useAuth, type Role } from "@/lib/auth-store";
 import { signupSchema, toFieldErrors, type FieldErrors } from "@/lib/validation";
+import { GoogleButton } from "@/components/google-button";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Create account — FrashionCart S.A" }] }),
@@ -87,6 +89,15 @@ function SignupPage() {
             {pending ? "Creating…" : `Create ${role === "brand" ? "brand account" : "account"}`}
           </button>
         </form>
+
+        <div className="my-8 flex items-center gap-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <GoogleButton />
+
+
 
         <p className="mt-8 text-sm text-muted-foreground">
           Already have an account? <Link to="/login" className="border-b border-foreground pb-0.5 text-foreground">Sign in</Link>

@@ -4,6 +4,8 @@ import { Eye, EyeOff, ShieldCheck, BadgeCheck, Truck, Instagram, Facebook } from
 import { useAuth } from "@/lib/auth-store";
 import { loginSchema, toFieldErrors, type FieldErrors } from "@/lib/validation";
 import { Wordmark } from "@/components/wordmark";
+import { GoogleButton } from "@/components/google-button";
+
 import stillLife from "@/assets/login-stilllife.jpg";
 
 export const Route = createFileRoute("/login")({
@@ -198,19 +200,8 @@ function LoginPage() {
             <div className="h-px flex-1 bg-[#D8C5AD]" />
           </div>
 
-          <button
-            type="button"
-            onClick={() => setErrors({ _form: "Google sign-in isn't enabled on this account yet." })}
-            className="flex w-full items-center justify-center gap-3 rounded-md border border-[#D8C5AD] bg-white py-3.5 text-sm text-[#111111] transition-colors duration-300 hover:bg-[#EFE7DA]"
-          >
-            <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden="true">
-              <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.5 2.4 30.1 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.2 17.7 9.5 24 9.5z" />
-              <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-2.8-.4-4.1H24v8.4h12.5c-.3 2.1-1.7 5.2-4.9 7.3l7.7 6c4.5-4.2 6.8-10.4 6.8-17.6z" />
-              <path fill="#FBBC05" d="M10.5 28.7A14.6 14.6 0 019.7 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 000 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z" />
-              <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.4-8.2 2.4-6.3 0-11.6-3.7-13.5-9l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
-            </svg>
-            Continue with Google
-          </button>
+          <GoogleButton />
+
 
           <p className="mt-10 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
