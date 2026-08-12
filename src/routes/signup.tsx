@@ -88,6 +88,15 @@ function SignupPage() {
           </button>
         </form>
 
+        <div className="my-8 flex items-center gap-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <GoogleButton />
+
+
+
         <p className="mt-8 text-sm text-muted-foreground">
           Already have an account? <Link to="/login" className="border-b border-foreground pb-0.5 text-foreground">Sign in</Link>
         </p>
