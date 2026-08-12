@@ -162,10 +162,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-
     setUser(null);
     try { localStorage.removeItem(SESSION_KEY); } catch {}
+    // Also clear any Google/social session so the next visit starts clean.
+    void import("@/integrations/supabase/client").then(({ supabase }) => supabase.auth.signOut()).catch(() => {});
   };
+
 
   const updateUser = (patch: Partial<User>) => {
     if (!user) return;
