@@ -4,6 +4,8 @@ import { Eye, EyeOff, ShieldCheck, BadgeCheck, Truck, Instagram, Facebook } from
 import { useAuth } from "@/lib/auth-store";
 import { loginSchema, toFieldErrors, type FieldErrors } from "@/lib/validation";
 import { Wordmark } from "@/components/wordmark";
+import { GoogleButton } from "@/components/google-button";
+
 import stillLife from "@/assets/login-stilllife.jpg";
 
 export const Route = createFileRoute("/login")({
