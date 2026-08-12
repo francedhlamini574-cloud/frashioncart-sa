@@ -189,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile: AuthContextType["updateProfile"] = (patch) => updateUser(patch);
 
   return (
-    <AuthContext.Provider value={{ user, ready, users, signup, login, logout, addAddress, removeAddress, updateProfile }}>
+    <AuthContext.Provider value={{ user, ready, users, signup, login, signInWithIdentity, logout, addAddress, removeAddress, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
