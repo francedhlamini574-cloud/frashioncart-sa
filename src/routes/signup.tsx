@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { useAuth, type Role } from "@/lib/auth-store";
 import { signupSchema, toFieldErrors, type FieldErrors } from "@/lib/validation";
+import { GoogleButton } from "@/components/google-button";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Create account — FrashionCart S.A" }] }),
